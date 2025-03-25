@@ -27,17 +27,16 @@ jobs:
       - name: Test
         run: dotnet test TestApi.sln --no-build --configuration Release
 
-  dockerize-and-deploy:
+  deploy-to-railway:
     needs: build-and-test
     runs-on: ubuntu-latest
+    container: ghcr.io/railwayapp/cli:latest
+    env:
+      RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+      SERVICE_ID: ${{ secrets.RAILWAY_SERVICE_ID }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v3
 
       - name: Deploy to Railway
-        uses: railwayapp/railway-github-actions@v0
-        with:
-          railwayToken: ${{ secrets.RAILWAY_TOKEN }}
-          projectId: ${{ secrets.RAILWAY_PROJECT_ID }}
-          environment: ${{ secrets.RAILWAY_ENVIRONMENT }}
-          serviceName: ${{ secrets.RAILWAY_SERVICE_NAME }}
+        run: railway up --service=${{ env.SERVICE_ID }}
